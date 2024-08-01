@@ -50,7 +50,7 @@ def main(past_stock_number):
         month = str(today.month)
         day = str(today.day)
         # month = '2'
-        # day = '10'
+        # day = '16'
         #到下一個月就重置list
         if month == next_month:
             past_stock_number=[]
@@ -158,9 +158,9 @@ def main(past_stock_number):
             #抓取公布的最近一月營收盈餘
             #revenue = re.search(r"營業收入(?:\(百萬元\))?\s+([\d.]+)", target_value)
             try:
-                eps_target = re.search(r"每股盈餘(?:\s+)?(?:\(虧損\)|（虧損）)?(?:\(虧\)|（虧）)?(?:\s+)?(?:\(元\)|（元）)?(?:\s+)?(?:\(單位：分美元\)|（單位：分美元）)?(?:\s+)?\(?(-?[\d.]+)\)?", target_value) #可能還會有格式的例外
-                eps_target = convert_eps(eps_target.group(1))
-                # print(eps_target)
+                eps_target = re.search(r"每股盈餘(?:\s+)?(?:\(虧損\)|（虧損）)?(?:\(虧\)|（虧）)?(?:\s+)?(?:\(元\)|（元）)?(?:\s+)?(?:\(單位：分美元\)|（單位：分美元）)?(?:\s+)?(\()?(-?[\d.]+)(\))?", target_value) #可能還會有格式的例外
+                eps_target = f"{eps_target.group(1) if eps_target.group(1) else ''}{eps_target.group(2)}{eps_target.group(3) if eps_target.group(3) else ''}"
+                eps_target = convert_eps(eps_target)
                 eps_list.append(eps_target)
             except:
                 eps_target = 'none'
@@ -192,7 +192,7 @@ def main(past_stock_number):
                     time.sleep(1)
                     find_past_eps=driver.find_element(By.XPATH,'//*[@id="qsp-eps-table"]/div/div[2]/div/div/ul/li[1]/div/div[2]/span')
                     stock_past_eps=find_past_eps.text
-                    average_stock_past_eps=float(stock_past_eps)/3
+                    average_stock_past_eps=round(float(stock_past_eps)/3,2)
                     if eps_ != 'none':
                         append_eps(stock,eps_,str(average_stock_past_eps))
                     else:
@@ -203,7 +203,7 @@ def main(past_stock_number):
                     time.sleep(1)
                     find_past_eps=driver.find_element(By.XPATH,'//*[@id="qsp-eps-table"]/div/div[2]/div/div/ul/li[1]/div/div[2]/span')
                     stock_past_eps=find_past_eps.text
-                    average_stock_past_eps=float(stock_past_eps)/3
+                    average_stock_past_eps=round(float(stock_past_eps)/3,2)
                     if eps_ != 'none':
                         append_eps(stock,eps_,str(average_stock_past_eps))
                     else:
@@ -223,7 +223,7 @@ def main(past_stock_number):
                     find_past_revenue=driver.find_element(By.XPATH,'//*[@id="qsp-revenue-table"]/div/div[2]/div/div/ul/li[1]/div/div[2]/ul/li[1]/span')
                     stock_past_revenue=find_past_revenue.text
                     stock_past_revenue = stock_past_revenue.replace(',', '')
-                    average_stock_past_revenue=int(stock_past_revenue)/3
+                    average_stock_past_revenue=round(int(stock_past_revenue)/3,2)
                     append_revenue(stock,stock_current_revenue,str(average_stock_past_revenue))
                 except:
                     url = "https://tw.stock.yahoo.com/quote/"+stock_number+".TWO/revenue"
@@ -237,7 +237,7 @@ def main(past_stock_number):
                     find_past_revenue=driver.find_element(By.XPATH,'//*[@id="qsp-revenue-table"]/div/div[2]/div/div/ul/li[1]/div/div[2]/ul/li[1]/span')
                     stock_past_revenue=find_past_revenue.text
                     stock_past_revenue = stock_past_revenue.replace(',', '')
-                    average_stock_past_revenue=int(stock_past_revenue)/3
+                    average_stock_past_revenue=round(int(stock_past_revenue)/3,2)
                     append_revenue(stock,stock_current_revenue,str(average_stock_past_revenue))
             except NoSuchElementException:
                 append_revenue(stock,'none','none')
@@ -253,9 +253,9 @@ def main(past_stock_number):
             eps_grow_up_percentage = 0
             if revenue['最近一月營收(千元)'] != 'none' and revenue['最近一季平均月營收(千元)'] != 'none' and eps['最近一月盈餘(元)'] != 'none' and eps['最近一季平均月盈餘(元)'] != 'none':
                 if float(revenue['最近一季平均月營收(千元)']) != 0:
-                    revenue_grow_up_percentage=(float(revenue['最近一月營收(千元)'].replace(',', ''))-float(revenue['最近一季平均月營收(千元)']))/float(revenue['最近一季平均月營收(千元)'])*100
+                    revenue_grow_up_percentage=(float(revenue['最近一月營收(千元)'].replace(',', ''))-float(revenue['最近一季平均月營收(千元)']))/abs(float(revenue['最近一季平均月營收(千元)']))*100
                 if float(eps['最近一季平均月盈餘(元)']) != 0:
-                    eps_grow_up_percentage=(float(eps['最近一月盈餘(元)'])-float(eps['最近一季平均月盈餘(元)']))/float(eps['最近一季平均月盈餘(元)'])*100
+                    eps_grow_up_percentage=(float(eps['最近一月盈餘(元)'])-float(eps['最近一季平均月盈餘(元)']))/abs(float(eps['最近一季平均月盈餘(元)']))*100
             revenue_grow_up_percentage_str = "{:.2f}".format(revenue_grow_up_percentage)
             eps_grow_up_percentage_str = "{:.2f}".format(eps_grow_up_percentage)
             message=revenue['股票']+"\n最近一月營收(千元):"+revenue['最近一月營收(千元)'].replace(',', '')+"\n最近一季平均月營收(千元):"+revenue['最近一季平均月營收(千元)']+"\n成長:"+revenue_grow_up_percentage_str+"%"+"\n最近一月盈餘(元):"+eps['最近一月盈餘(元)']+"\n最近一季平均月盈餘(元):"+eps['最近一季平均月盈餘(元)']+"\n成長:"+eps_grow_up_percentage_str+"%"
