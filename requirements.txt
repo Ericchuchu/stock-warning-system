@@ -1,0 +1,7 @@
+beautifulsoup4==4.12.3
+pandas==2.0.3
+pyTelegramBotAPI==4.15.2
+pyTelegramBotAPI==4.21.0
+Requests==2.32.3
+selenium==4.23.1
+webdriver_manager==4.0.1
